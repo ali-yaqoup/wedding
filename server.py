@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+import os
 import secrets
 import sqlite3
 import threading
@@ -19,9 +20,17 @@ MAX_NAME = 80
 MAX_MESSAGE = 500
 MAX_RSVPS = 5000
 DB_LOCK = threading.Lock()
+DATABASE_URL = (os.environ.get("DATABASE_URL") or "").strip()
+USE_PG = DATABASE_URL.startswith("postgres")
+PH = "%s" if USE_PG else "?"
 
 
 def db():
+    if USE_PG:
+        import psycopg2
+        from psycopg2.extras import RealDictCursor
+
+        return psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
     DATA_DIR.mkdir(exist_ok=True)
     con = sqlite3.connect(DB_FILE, check_same_thread=False, timeout=30)
     con.row_factory = sqlite3.Row
@@ -33,7 +42,8 @@ def db():
 def init_db():
     with DB_LOCK:
         con = db()
-        con.execute(
+        cur = con.cursor()
+        cur.execute(
             """
             CREATE TABLE IF NOT EXISTS rsvps (
                 id TEXT PRIMARY KEY,
@@ -42,7 +52,7 @@ def init_db():
                 guests INTEGER NOT NULL DEFAULT 0,
                 message TEXT NOT NULL DEFAULT '',
                 featured INTEGER NOT NULL DEFAULT 0,
-                createdAt TEXT NOT NULL
+                "createdAt" TEXT NOT NULL
             )
             """
         )
@@ -65,9 +75,9 @@ def row_to_dict(row):
 def load_rsvps():
     with DB_LOCK:
         con = db()
-        rows = con.execute(
-            "SELECT * FROM rsvps ORDER BY createdAt DESC"
-        ).fetchall()
+        cur = con.cursor()
+        cur.execute('SELECT * FROM rsvps ORDER BY "createdAt" DESC')
+        rows = cur.fetchall()
         con.close()
     return [row_to_dict(row) for row in rows]
 
@@ -75,14 +85,16 @@ def load_rsvps():
 def insert_rsvp(row):
     with DB_LOCK:
         con = db()
-        count = con.execute("SELECT COUNT(*) FROM rsvps").fetchone()[0]
+        cur = con.cursor()
+        cur.execute("SELECT COUNT(*) AS n FROM rsvps")
+        count = cur.fetchone()["n"]
         if count >= MAX_RSVPS:
             con.close()
             return False
-        con.execute(
-            """
-            INSERT INTO rsvps (id, name, status, guests, message, featured, createdAt)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+        cur.execute(
+            f"""
+            INSERT INTO rsvps (id, name, status, guests, message, featured, "createdAt")
+            VALUES ({PH}, {PH}, {PH}, {PH}, {PH}, {PH}, {PH})
             """,
             (
                 row["id"],
@@ -102,15 +114,17 @@ def insert_rsvp(row):
 def set_featured(rsvp_id, featured):
     with DB_LOCK:
         con = db()
-        row = con.execute("SELECT * FROM rsvps WHERE id = ?", (rsvp_id,)).fetchone()
+        cur = con.cursor()
+        cur.execute(f"SELECT * FROM rsvps WHERE id = {PH}", (rsvp_id,))
+        row = cur.fetchone()
         if not row:
             con.close()
             return None
         data = row_to_dict(row)
         has_message = bool(data["message"].strip())
         data["featured"] = bool(featured) and has_message
-        con.execute(
-            "UPDATE rsvps SET featured = ? WHERE id = ?",
+        cur.execute(
+            f"UPDATE rsvps SET featured = {PH} WHERE id = {PH}",
             (1 if data["featured"] else 0, rsvp_id),
         )
         con.commit()
@@ -147,6 +161,9 @@ def write_json(path, payload):
 
 
 def admin_password():
+    env = (os.environ.get("ADMIN_PASSWORD") or "").strip()
+    if env:
+        return env
     data = read_json(ADMIN_FILE, {"password": "1234"})
     return str(data.get("password") or "1234")
 
@@ -272,9 +289,9 @@ class Handler(SimpleHTTPRequestHandler):
 if __name__ == "__main__":
     DATA_DIR.mkdir(exist_ok=True)
     init_db()
-    if not ADMIN_FILE.exists():
+    if not ADMIN_FILE.exists() and not (os.environ.get("ADMIN_PASSWORD") or "").strip():
         write_json(ADMIN_FILE, {"password": "1234"})
-    port = 4173
+    port = int(os.environ.get("PORT", "4173"))
     server = ThreadingHTTPServer(("0.0.0.0", port), Handler)
     print(f"Invitation running at http://127.0.0.1:{port}/")
     print(f"Owner dashboard: http://127.0.0.1:{port}/admin")
