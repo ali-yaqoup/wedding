@@ -121,7 +121,6 @@ p{margin:0}
 .henna p{margin:10px auto 0;max-width:320px;color:var(--mauve);font-size:15.5px;line-height:2}
 .names{font-family:var(--f-display);font-size:58px;line-height:1.2;color:var(--ink);margin-block:6px;text-shadow:0 1px 0 rgba(255,255,255,.4)}
 .names .amp{display:block;font-size:26px;color:var(--gold);line-height:1;font-family:var(--f-title)}
-.date-big{font-size:18px;font-weight:700;letter-spacing:.04em;font-variant-numeric:tabular-nums;color:var(--wine)}
 
 /* ---------- Countdown ---------- */
 .count{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:26px}
@@ -339,7 +338,6 @@ textarea.field{resize:vertical;min-height:84px}
       </h1>
       <p class="verse" style="margin:0">وذلك من توفيق الله تعالى</p>
       <div class="orn" style="width:200px"><i></i></div>
-      <div class="date-big" id="dateBig"></div>
       <div class="label" id="venueBig"></div>
     </div>
   </section>
@@ -490,7 +488,6 @@ var W = {
   document.querySelectorAll('[data-groom]').forEach(function(e){e.textContent=W.groom});
   document.querySelectorAll('[data-bride]').forEach(function(e){e.textContent=W.bride});
   $('finDate').textContent = dayName + '، ' + longDate;
-  $('dateBig').textContent = 'يوم الجمعة ٦ / ١١ / ٢٠٢٦';
   $('venueBig').textContent = W.venue;
   $('dDate').innerHTML = 'يوم الجمعة<small>' + longDate + '</small>';
   $('dTime').innerHTML = 'الساعة الرابعة مساءً';
