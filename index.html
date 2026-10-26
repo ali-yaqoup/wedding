@@ -220,8 +220,25 @@ textarea.field{resize:vertical;min-height:84px}
 .snd .off{display:none}
 .snd.muted .on{display:none}.snd.muted .off{display:block}
 .snd:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+
+/* ---------- Scroll cue ---------- */
+.scroll-cue{
+  position:fixed;z-index:35;left:50%;transform:translateX(-50%);
+  bottom:calc(72px + env(safe-area-inset-bottom,0px));
+  display:inline-flex;align-items:center;gap:8px;
+  max-width:calc(100vw - 128px);
+  padding:10px 16px;border-radius:999px;pointer-events:none;
+  font-family:var(--f-ui);font-weight:600;font-size:13px;color:var(--ink);line-height:1.4;
+  background:linear-gradient(180deg,#FBF6EC,#F0E2C8);
+  box-shadow:0 10px 24px -8px rgba(22,14,18,.55),inset 0 0 0 1.5px var(--gold);
+  opacity:0;transition:opacity .45s ease;
+}
+.scroll-cue[hidden]{display:none!important}
+.scroll-cue.show{opacity:1}
+.scroll-cue svg{width:16px;height:16px;flex:0 0 auto;color:var(--gold-deep);animation:cuebounce 1.35s ease-in-out infinite}
+@keyframes cuebounce{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
 @media (prefers-reduced-motion:reduce){
-  .env:not(.open),.seal,.hero svg.arch,.opened .hero-in>*{animation:none}
+  .env:not(.open),.seal,.hero svg.arch,.opened .hero-in>*,.scroll-cue svg{animation:none}
   .rvready .rv:not(.in){opacity:1;transform:none}
 }
 @media (prefers-reduced-motion:reduce){
@@ -471,6 +488,9 @@ textarea.field{resize:vertical;min-height:84px}
   </section>
 </main>
 
+<div class="scroll-cue" id="scrollCue" hidden>اسحب لأسفل لمزيد من التفاصيل
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+</div>
 <button class="snd muted" id="snd" type="button" aria-label="تشغيل أو إيقاف الموسيقى">
   <svg class="on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>
   <svg class="off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg>
@@ -678,6 +698,35 @@ var W = {
       },{threshold:.12, rootMargin:'0px 0px -6% 0px'});
       els.forEach(function(e){ io.observe(e) });
     }
+    showScrollCue();
+  }
+
+  function showScrollCue(){
+    var cue = $('scrollCue');
+    if(!cue || cue.dataset.done) return;
+    var hideTimer = 0;
+    function dismiss(){
+      if(cue.dataset.done) return;
+      cue.dataset.done = '1';
+      cue.classList.remove('show');
+      window.removeEventListener('scroll', onScroll);
+      hideTimer = setTimeout(function(){ cue.hidden = true }, 450);
+    }
+    function onScroll(){
+      if(window.scrollY > 60) dismiss();
+    }
+    window.addEventListener('scroll', onScroll, {passive:true});
+    setTimeout(function(){
+      if(cue.dataset.done || window.scrollY > 60){
+        dismiss();
+        clearTimeout(hideTimer);
+        cue.hidden = true;
+        return;
+      }
+      cue.hidden = false;
+      void cue.offsetWidth;
+      cue.classList.add('show');
+    }, 1500);
   }
 
   /* ===== Falling petals over the hero ===== */
