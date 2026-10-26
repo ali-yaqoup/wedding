@@ -176,7 +176,8 @@ class Handler(SimpleHTTPRequestHandler):
         print("[%s] %s" % (self.log_date_time_string(), format % args))
 
     def end_headers(self):
-        if self.path.startswith("/api/"):
+        path = urlparse(self.path).path
+        if path.startswith("/api/") or path in ("/", "/index.html", "/admin", "/admin/", "/admin.html"):
             self.send_header("Cache-Control", "no-store")
         super().end_headers()
 

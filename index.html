@@ -229,7 +229,7 @@ textarea.field{resize:vertical;min-height:84px}
 .stage{position:relative;height:100%;width:min(100%,calc(100vh*9/16));overflow:hidden;background:#0e090b}
 @supports (height:100dvh){.stage{width:min(100%,calc(100dvh*9/16))}}
 .stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(40,20,30,.5),rgba(40,20,30,.74));opacity:0;transition:opacity 1.4s ease}
+.shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(14,9,11,.4),rgba(14,9,11,.78) 55%,rgba(14,9,11,.96) 82%,#0e090b);opacity:0;transition:opacity 1.4s ease}
 .stage.fin .shade{opacity:1}
 .start{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:rgba(40,20,30,.45);color:#fff;text-align:center;padding:24px;transition:opacity .5s ease}
 .start.hide{opacity:0;pointer-events:none}
@@ -237,14 +237,13 @@ textarea.field{resize:vertical;min-height:84px}
 .start .s{font-size:15px;opacity:.92}
 .fintxt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#fff;text-align:center;padding:24px;pointer-events:none}
 .fintxt .btn{pointer-events:auto}
-.fin-save{font-family:var(--f-kufi);font-size:15px;letter-spacing:.32em;color:var(--gold-lt);opacity:0}
 .fin-names{font-family:var(--f-display);font-size:52px;line-height:1.35;text-shadow:0 3px 22px rgba(0,0,0,.7);opacity:0}
 .fin-go{margin-top:26px;opacity:0;font-family:var(--f-body)}
-.stage.fin .fin-save,.stage.fin .fin-names,.stage.fin .fin-go{animation:rise 1.1s cubic-bezier(.2,.7,.2,1) both}
-.stage.fin .fin-save{animation-delay:.3s}.stage.fin .fin-names{animation-delay:.7s}.stage.fin .fin-go{animation-delay:0s}
+.stage.fin .fin-names,.stage.fin .fin-go{animation:rise 1.1s cubic-bezier(.2,.7,.2,1) both}
+.stage.fin .fin-names{animation-delay:.5s}.stage.fin .fin-go{animation-delay:0s}
 .skip{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:max(14px,env(safe-area-inset-right,0px));z-index:3;border:0;border-radius:999px;padding:7px 16px;font:inherit;font-size:14px;color:#fff;background:rgba(20,10,16,.45);cursor:pointer}
 .skip:focus-visible{outline:3px solid #fff;outline-offset:3px}
-@media (prefers-reduced-motion:reduce){.stage.fin .fin-save,.stage.fin .fin-names,.stage.fin .fin-go{animation:none;opacity:1}.shade{transition:none}}
+@media (prefers-reduced-motion:reduce){.stage.fin .fin-names,.stage.fin .fin-go{animation:none;opacity:1}.shade{transition:none}}
 .wishes{display:grid;gap:14px;margin-top:22px;text-align:right}
 .wish{margin:0;background:var(--paper-2);border-radius:2px;padding:18px;box-shadow:inset 0 0 0 1px var(--gold-lt)}
 .wish blockquote{margin:0 0 8px;font-family:var(--f-display);font-size:20px;line-height:2}
@@ -266,7 +265,6 @@ textarea.field{resize:vertical;min-height:84px}
     <video id="vid" src="intro.mp4" poster="poster.jpg" muted playsinline webkit-playsinline autoplay preload="auto"></video>
     <div class="shade"></div>
     <div class="fintxt">
-      <div class="fin-save">موعد الفرح</div>
       <div class="fin-names"><span data-groom>أوس</span> و <span data-bride>ريم</span></div>
       <button class="btn fin-go" id="finGo" type="button" hidden>إلى الدعوة</button>
     </div>
@@ -582,7 +580,7 @@ var W = {
   document.addEventListener('touchstart', tryUnlockMusic, {capture:true, passive:true});
   document.addEventListener('keydown', tryUnlockMusic, true);
 
-  /* ===== Cinema intro: video, then the date ===== */
+  /* ===== Cinema intro: freeze before the on-video date card ===== */
   var stageEl = $('stage'), vid = $('vid'), cinema = $('cinema'), finShown = false;
   function endCinema(){
     cinema.classList.add('gone');
@@ -592,11 +590,20 @@ var W = {
     afterOpen();
     setTimeout(function(){ cinema.hidden = true }, 900);
   }
+  function freezeBeforeDate(){
+    try{
+      vid.pause();
+      if(vid.duration && isFinite(vid.duration)){
+        vid.currentTime = Math.max(0, vid.duration - 3.2);
+      }
+    }catch(e){}
+  }
   function showFin(){
     if(finShown) return; finShown = true;
+    freezeBeforeDate();
     stageEl.classList.add('fin');
     $('skip').hidden = true;
-    setTimeout(function(){ $('finGo').hidden = false }, 2600);
+    setTimeout(function(){ $('finGo').hidden = false }, 1800);
   }
   function beginShow(){
     musicStart();
@@ -606,14 +613,11 @@ var W = {
   beginShow();
   vid.addEventListener('play', tryUnlockMusic);
   vid.addEventListener('timeupdate', function(){
-    if(vid.duration && vid.currentTime > vid.duration - .9) showFin();
+    if(vid.duration && vid.currentTime > vid.duration - 3.2) showFin();
   });
   vid.addEventListener('ended', showFin);
   vid.addEventListener('error', showFin);
-  $('skip').addEventListener('click', function(){
-    showFin();
-    try{ vid.pause(); if(vid.duration) vid.currentTime = vid.duration - .05 }catch(e){}
-  });
+  $('skip').addEventListener('click', showFin);
   $('finGo').addEventListener('click', endCinema);
 
   var inviteShown = false;
