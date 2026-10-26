@@ -1,0 +1,9 @@
+data/*.db
+data/*.db-wal
+data/*.db-shm
+data/admin.json
+data/rsvps.json
+__pycache__/
+*.pyc
+.DS_Store
+.tools/

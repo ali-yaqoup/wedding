@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>لوحة صاحب الدعوة</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Noto+Naskh+Arabic:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="admin-body">
+    <main class="admin">
+      <section class="section login" id="loginCard">
+        <h1>لوحة صاحب الدعوة</h1>
+        <p class="lead">تابعوا تأكيدات الحضور، عدد الضيوف، والتهاني.</p>
+        <form class="rsvp" id="loginForm">
+          <label>
+            كلمة المرور
+            <input name="password" type="password" required autocomplete="current-password" />
+          </label>
+          <button class="btn" type="submit">دخول</button>
+          <p class="form-error" id="loginError" hidden>كلمة المرور غير صحيحة</p>
+        </form>
+      </section>
+
+      <div id="dashboard" hidden>
+        <header class="admin-top">
+          <div>
+            <h1>لوحة صاحب الدعوة</h1>
+            <p class="lead" id="coupleLine">أوس وريم</p>
+          </div>
+          <div class="admin-actions">
+            <a class="btn btn-ghost" href="/">عرض الدعوة</a>
+            <button class="btn btn-ghost" id="logout" type="button">خروج</button>
+          </div>
+        </header>
+
+        <section class="stats" aria-label="ملخص الحضور">
+          <article>
+            <strong id="statGuests">0</strong>
+            <span>إجمالي الضيوف</span>
+          </article>
+          <article>
+            <strong id="statAttending">0</strong>
+            <span>مؤكّدون</span>
+          </article>
+          <article>
+            <strong id="statDeclining">0</strong>
+            <span>معتذرون</span>
+          </article>
+          <article>
+            <strong id="statMessages">0</strong>
+            <span>رسائل وتهاني</span>
+          </article>
+        </section>
+
+        <section class="section">
+          <div class="admin-toolbar">
+            <h2>التأكيدات والتهاني</h2>
+            <label class="filter">
+              عرض
+              <select id="filter">
+                <option value="all">الكل</option>
+                <option value="attending">الحضور</option>
+                <option value="declining">الاعتذار</option>
+                <option value="messages">مع رسالة</option>
+                <option value="featured">ظاهرة في الدعوة</option>
+              </select>
+            </label>
+          </div>
+          <p class="lead">اختاروا التهاني اللي تظهر للضيوف داخل الدعوة.</p>
+          <div id="rsvpList" class="rsvp-list"></div>
+          <p class="lead" id="emptyState" hidden>لسا ما وصل أي تأكيد حضور.</p>
+        </section>
+      </div>
+    </main>
+    <script src="config.js"></script>
+    <script src="admin.js"></script>
+  </body>
+</html>
