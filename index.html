@@ -242,12 +242,12 @@ textarea.field{resize:vertical;min-height:84px}
 
 <div dir="rtl" lang="ar">
 
-<audio id="bgm" src="music.mp3" loop preload="auto"></audio>
+<audio id="bgm" src="music.mp3" loop preload="auto" autoplay playsinline></audio>
 
 <!-- ======== Cinema intro ======== -->
 <div id="cinema">
   <div class="stage" id="stage">
-    <video id="vid" src="intro.mp4" poster="poster.jpg" muted playsinline autoplay preload="auto"></video>
+    <video id="vid" src="intro.mp4" poster="poster.jpg" muted playsinline webkit-playsinline autoplay preload="auto"></video>
     <div class="shade"></div>
     <div class="fintxt">
       <div class="fin-save">احفظوا التاريخ</div>
@@ -428,7 +428,7 @@ textarea.field{resize:vertical;min-height:84px}
   </section>
 </main>
 
-<button class="snd" id="snd" type="button" aria-label="تشغيل أو إيقاف الموسيقى" hidden>
+<button class="snd muted" id="snd" type="button" aria-label="تشغيل أو إيقاف الموسيقى">
   <svg class="on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>
   <svg class="off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg>
 </button>
@@ -548,102 +548,56 @@ var W = {
 
   document.body.classList.add('locked');
 
-  /* ===== Sound: wedding music, with a soft chime fallback ===== */
-  var AC = null, master = null, musicOn = false, everStarted = false, nextT = 0, bar = 0, timer = null;
+  /* ===== Sound: the wedding song only ===== */
   var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  function initAudio(){
-    if(AC) return;
-    var C = window.AudioContext || window.webkitAudioContext;
-    if(!C) return;
-    AC = new C();
-    master = AC.createGain(); master.gain.value = 0;
-    var dl = AC.createDelay(1); dl.delayTime.value = .34;
-    var fb = AC.createGain(); fb.gain.value = .42;
-    var wet = AC.createGain(); wet.gain.value = .45;
-    master.connect(AC.destination);
-    master.connect(dl); dl.connect(fb); fb.connect(dl); dl.connect(wet); wet.connect(AC.destination);
-  }
-  function note(f, t, dur, vol, type){
-    var o = AC.createOscillator(), g = AC.createGain();
-    o.type = type || 'sine'; o.frequency.value = f;
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.linearRampToValueAtTime(vol, t + .015);
-    g.gain.exponentialRampToValueAtTime(.0001, t + dur);
-    o.connect(g); g.connect(master); o.start(t); o.stop(t + dur + .05);
-  }
-  function crack(){
-    if(!AC) return;
-    var len = AC.sampleRate * .18, buf = AC.createBuffer(1, len, AC.sampleRate), d = buf.getChannelData(0);
-    for(var i=0;i<len;i++){ d[i] = (Math.random()*2-1) * Math.pow(1 - i/len, 3) }
-    var s = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain();
-    s.buffer = buf; f.type = 'bandpass'; f.frequency.value = 1800; g.gain.value = .5;
-    s.connect(f); f.connect(g); g.connect(master); s.start();
-  }
-  function chime(){
-    if(!AC) return;
-    var t = AC.currentTime + .15;
-    [880, 1174.66, 1479.98, 1760].forEach(function(f,i){ note(f, t + i*.11, 1.6, .16, 'sine') });
-  }
-  /* hijaz-flavoured arpeggio over four bars, 8th notes */
-  var BARS = [
-    {bass:73.42, n:[293.66,369.99,440,587.33,440,369.99,440,369.99]},
-    {bass:77.78, n:[311.13,392,466.16,622.25,466.16,392,466.16,392]},
-    {bass:73.42, n:[293.66,369.99,440,523.25,440,369.99,440,369.99]},
-    {bass:98,    n:[392,466.16,587.33,783.99,587.33,466.16,587.33,466.16]}
-  ];
-  var STEP = .44;
-  function schedule(){
-    if(!AC || !musicOn) return;
-    while(nextT < AC.currentTime + 1.6){
-      var b = BARS[bar % BARS.length];
-      note(b.bass, nextT, STEP*8, .22, 'sine');
-      note(b.bass*2, nextT, STEP*8, .06, 'triangle');
-      for(var i=0;i<8;i++){ note(b.n[i], nextT + i*STEP, 1.5, i%4===0 ? .13 : .085, 'triangle') }
-      nextT += STEP*8; bar++;
-    }
+  var bg = $('bgm');
+  var musicOn = false, wantMusic = true;
+  function setMutedUI(on){
+    $('snd').classList.toggle('muted', !on);
   }
   function musicStart(){
-    var bg = $('bgm');
-    if(bg){
-      musicOn = true; everStarted = true;
-      bg.volume = .85;
-      var pr = bg.play(); if(pr && pr.catch) pr.catch(function(){});
-      if(AC){ if(AC.state === 'suspended') AC.resume(); master.gain.cancelScheduledValues(AC.currentTime); master.gain.value = .55 }
-      $('snd').classList.remove('muted');
-      return;
+    wantMusic = true;
+    if(!bg) return;
+    bg.volume = .85;
+    var pr = bg.play();
+    if(pr && pr.then){
+      pr.then(function(){
+        musicOn = true;
+        setMutedUI(true);
+      }).catch(function(){
+        musicOn = false;
+        setMutedUI(false);
+      });
+    } else {
+      musicOn = !bg.paused;
+      setMutedUI(musicOn);
     }
-    if(!AC) return;
-    musicOn = true; everStarted = true;
-    if(AC.state === 'suspended') AC.resume();
-    master.gain.cancelScheduledValues(AC.currentTime);
-    master.gain.linearRampToValueAtTime(.55, AC.currentTime + 1.5);
-    nextT = Math.max(nextT, AC.currentTime + .2);
-    schedule(); clearInterval(timer); timer = setInterval(schedule, 400);
-    $('snd').classList.remove('muted');
   }
   function musicStop(){
-    musicOn = false; clearInterval(timer);
-    var bg = $('bgm'); if(bg) bg.pause();
-    if(AC){
-      master.gain.cancelScheduledValues(AC.currentTime);
-      master.gain.linearRampToValueAtTime(0, AC.currentTime + .4);
-      setTimeout(function(){ if(!musicOn && AC) AC.suspend() }, 600);
-    }
-    $('snd').classList.add('muted');
+    wantMusic = false;
+    musicOn = false;
+    if(bg) bg.pause();
+    setMutedUI(false);
+  }
+  function tryUnlockMusic(){
+    if(!wantMusic || !bg || (!bg.paused && musicOn)) return;
+    musicStart();
   }
   document.addEventListener('visibilitychange', function(){
-    var bg = $('bgm');
-    if(bg && musicOn){ if(document.hidden) bg.pause(); else { var q = bg.play(); if(q && q.catch) q.catch(function(){}) } }
-    if(!AC || !musicOn) return;
-    if(document.hidden) AC.suspend(); else AC.resume();
+    if(!bg || !wantMusic) return;
+    if(document.hidden) bg.pause();
+    else musicStart();
   });
-  $('snd').addEventListener('click', function(){ musicOn ? musicStop() : musicStart() });
-  document.querySelectorAll('.btn, .choice span, .stepper button').forEach(function(b){
-    b.addEventListener('click', function(){ if(AC && musicOn) note(1318.5, AC.currentTime, .5, .12, 'sine') });
+  $('snd').addEventListener('click', function(e){
+    e.stopPropagation();
+    if(musicOn) musicStop(); else musicStart();
   });
+  document.addEventListener('pointerdown', tryUnlockMusic, true);
+  document.addEventListener('touchstart', tryUnlockMusic, {capture:true, passive:true});
+  document.addEventListener('keydown', tryUnlockMusic, true);
 
-  /* ===== Cinema intro: video, then the date, then the envelope ===== */
-  var stageEl = $('stage'), vid = $('vid'), cinema = $('cinema'), finShown = false, burstDone = false;
+  /* ===== Cinema intro: video, then the date ===== */
+  var stageEl = $('stage'), vid = $('vid'), cinema = $('cinema'), finShown = false;
   function endCinema(){
     cinema.classList.add('gone');
     try{ vid.pause() }catch(e){}
@@ -659,17 +613,13 @@ var W = {
     setTimeout(function(){ $('finGo').hidden = false }, 2600);
   }
   function beginShow(){
-    try{ initAudio(); musicStart() }catch(e){}
+    musicStart();
     var p = vid.play();
     if(p && p.catch) p.catch(function(){ showFin() });
   }
   beginShow();
-  document.addEventListener('pointerdown', function once(){
-    document.removeEventListener('pointerdown', once);
-    if(!everStarted) beginShow();
-  });
+  vid.addEventListener('play', tryUnlockMusic);
   vid.addEventListener('timeupdate', function(){
-    if(!burstDone && vid.currentTime > 3.9){ burstDone = true; try{ chime() }catch(e){} }
     if(vid.duration && vid.currentTime > vid.duration - .9) showFin();
   });
   vid.addEventListener('ended', showFin);
@@ -685,8 +635,7 @@ var W = {
     if(inviteShown) return;
     inviteShown = true;
     document.body.classList.add('opened');
-    $('snd').hidden = false;
-    try{ if(!everStarted) musicStart() }catch(e){}
+    musicStart();
     startPetals();
     if('IntersectionObserver' in window){
       var els = document.querySelectorAll('main section:not(.hero) > *');
