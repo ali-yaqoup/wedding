@@ -166,14 +166,6 @@ textarea.field{resize:vertical;min-height:84px}
 .stepper output{font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
 
 /* ---------- Program ---------- */
-.prog{list-style:none;margin:24px 0 0;padding:0;display:grid;gap:0;text-align:right;position:relative}
-.prog li{display:grid;grid-template-columns:62px 18px 1fr;gap:10px;align-items:start;padding-bottom:22px;position:relative}
-.prog li:last-child{padding-bottom:0}
-.prog time{font-variant-numeric:tabular-nums;font-weight:600;color:var(--gold);font-size:15px;padding-top:2px}
-.prog .dot{width:12px;height:12px;border-radius:50%;background:var(--gold);margin-top:9px;justify-self:center;position:relative;z-index:1;box-shadow:0 0 0 4px var(--paper)}
-.prog li:not(:last-child) .dot::after{content:"";position:absolute;top:12px;left:50%;width:1px;height:calc(100% + 40px);background:var(--gold-lt);transform:translateX(-50%)}
-.prog b{display:block;font-weight:600;font-size:17px}
-.prog span.d{font-size:13.5px;color:var(--mauve)}
 
 /* ---------- Closing ---------- */
 .closing{padding-bottom:88px}
@@ -435,14 +427,6 @@ textarea.field{resize:vertical;min-height:84px}
     <h2>حفل حناء العروس</h2>
     <p id="hennaWhen"></p>
     <p id="hennaWhere"></p>
-    <p>يُقدَّم واجب الضيافة الساعة الخامسة مساءً</p>
-  </section>
-
-  <!-- ======== Program ======== -->
-  <section>
-    <p class="kicker">الترتيب</p>
-    <h2>برنامج السهرة</h2>
-    <ul class="prog" id="prog"></ul>
   </section>
 
   <!-- ======== Closing ======== -->
@@ -470,11 +454,7 @@ var W = {
   city: '',
   address: 'قاعة أبو فلاح الكبرى',
   rsvpPhone: '',
-  hennaStart: '2026-11-05T16:00:00+02:00',
-  program: [
-    ['16:00','حفل الزفاف','قاعة أبو فلاح الكبرى'],
-    ['17:00','واجب الضيافة','يتناول المدعوون العشاء']
-  ]
+  hennaStart: '2026-11-05T16:00:00+02:00'
 };
 
 (function(){
@@ -483,7 +463,6 @@ var W = {
   var ar = {timeZone:'Asia/Hebron', numberingSystem:'arab'};
   var dayName = new Intl.DateTimeFormat('ar', Object.assign({weekday:'long'}, ar)).format(d);
   var longDate = new Intl.DateTimeFormat('ar', Object.assign({day:'numeric', month:'long', year:'numeric'}, ar)).format(d);
-  var timeTxt = new Intl.DateTimeFormat('ar', Object.assign({hour:'numeric', minute:'2-digit', hour12:true}, ar)).format(d);
 
   document.querySelectorAll('[data-groom]').forEach(function(e){e.textContent=W.groom});
   document.querySelectorAll('[data-bride]').forEach(function(e){e.textContent=W.bride});
@@ -509,19 +488,6 @@ var W = {
   function toAr(n){
     return String(n).replace(/\d/g, function(ch){ return '٠١٢٣٤٥٦٧٨٩'[ch] });
   }
-  function arabClock(hhmm){
-    var parts = String(hhmm).split(':');
-    var h = parseInt(parts[0], 10);
-    var m = parts[1] || '00';
-    var suffix = h >= 12 ? 'مساءً' : 'صباحاً';
-    var h12 = h % 12; if(!h12) h12 = 12;
-    return toAr(h12) + ':' + toAr(String(m).padStart(2,'0')) + ' ' + suffix;
-  }
-
-  /* program */
-  $('prog').innerHTML = W.program.map(function(p){
-    return '<li><time>'+arabClock(p[0])+'</time><i class="dot"></i><div><b>'+p[1]+'</b><span class="d">'+p[2]+'</span></div></li>';
-  }).join('');
 
   /* countdown */
   function pad(n){return toAr(String(n).padStart(2,'0'))}
