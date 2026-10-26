@@ -127,10 +127,19 @@ p{margin:0}
 .tile{background:linear-gradient(180deg,#FFFaf2,var(--paper-2));border-radius:4px;padding:16px 4px 12px;box-shadow:inset 0 0 0 1px rgba(196,160,86,.4),0 10px 24px -16px rgba(44,26,22,.45)}
 .tile b{display:block;font-family:var(--f-title);font-weight:700;font-size:28px;line-height:1.2;font-variant-numeric:tabular-nums;color:var(--wine)}
 .tile span{font-size:12px;color:var(--mauve);font-family:var(--f-kufi);letter-spacing:.08em}
-.count.sm{gap:6px;margin:14px auto 4px;max-width:268px}
-.count.sm .tile{padding:8px 2px 7px;box-shadow:inset 0 0 0 1px rgba(196,160,86,.35)}
-.count.sm .tile b{font-size:18px}
-.count.sm .tile span{font-size:10px;letter-spacing:.04em}
+.henna-count{display:flex;align-items:center;justify-content:center;gap:6px;margin:14px auto 6px}
+.henna-count svg.h-sprig{width:16px;height:46px;flex:0 0 auto;color:var(--wine);opacity:.9}
+.henna-count svg.h-sprig.flip{transform:scaleX(-1)}
+.henna-loz{display:flex;align-items:flex-start;gap:12px;margin:0;padding:0;list-style:none}
+.henna-loz li{display:flex;flex-direction:column;align-items:center;gap:9px;width:40px}
+.henna-loz .gem{
+  width:34px;height:34px;display:grid;place-items:center;font-style:normal;
+  background:linear-gradient(180deg,#9a3a4c,var(--wine));
+  transform:rotate(45deg);
+  box-shadow:inset 0 0 0 1.5px var(--gold),0 5px 10px -7px rgba(44,26,22,.5);
+}
+.henna-loz b{transform:rotate(-45deg);color:#FBF6EC;font-family:var(--f-title);font-weight:700;font-size:13px;line-height:1;font-variant-numeric:tabular-nums}
+.henna-loz span{font-family:var(--f-kufi);font-size:9px;color:var(--wine);letter-spacing:.04em}
 .sub{font-size:15px;color:var(--mauve);margin-top:8px}
 
 /* ---------- Dua card ---------- */
@@ -351,11 +360,31 @@ textarea.field{resize:vertical;min-height:84px}
   <section class="henna dua">
     <p class="kicker">ليلة الحناء</p>
     <h2>حفل حناء العروس</h2>
-    <div class="count sm" aria-label="باقي على ليلة الحناء">
-      <div class="tile"><b id="hn-d">--</b><span>يوم</span></div>
-      <div class="tile"><b id="hn-h">--</b><span>ساعة</span></div>
-      <div class="tile"><b id="hn-m">--</b><span>دقيقة</span></div>
-      <div class="tile"><b id="hn-s">--</b><span>ثانية</span></div>
+    <div class="henna-count" aria-label="باقي على ليلة الحناء">
+      <svg class="h-sprig" viewBox="0 0 24 56" aria-hidden="true">
+        <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <path stroke-width="1.4" d="M12 54V10"/>
+          <path stroke-width="1.2" d="M12 18c-6-4-9-1-9 4 4 1 7 1 9-1M12 18c6-4 9-1 9 4-4 1-7 1-9-1"/>
+          <path stroke-width="1.2" d="M12 30c-7-4-10-1-10 5 5 1 8 1 10-2M12 30c7-4 10-1 10 5-5 1-8 1-10-2"/>
+          <path stroke-width="1.2" d="M12 42c-6-3-8 0-8 4 4 1 6 1 8-1M12 42c6-3 8 0 8 4-4 1-6 1-8-1"/>
+          <path stroke-width="1.3" d="M12 10c-3-6 3-8 0-8"/>
+        </g>
+      </svg>
+      <ol class="henna-loz">
+        <li><i class="gem"><b id="hn-d">--</b></i><span>يوم</span></li>
+        <li><i class="gem"><b id="hn-h">--</b></i><span>ساعة</span></li>
+        <li><i class="gem"><b id="hn-m">--</b></i><span>دقيقة</span></li>
+        <li><i class="gem"><b id="hn-s">--</b></i><span>ثانية</span></li>
+      </ol>
+      <svg class="h-sprig flip" viewBox="0 0 24 56" aria-hidden="true">
+        <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <path stroke-width="1.4" d="M12 54V10"/>
+          <path stroke-width="1.2" d="M12 18c-6-4-9-1-9 4 4 1 7 1 9-1M12 18c6-4 9-1 9 4-4 1-7 1-9-1"/>
+          <path stroke-width="1.2" d="M12 30c-7-4-10-1-10 5 5 1 8 1 10-2M12 30c7-4 10-1 10 5-5 1-8 1-10-2"/>
+          <path stroke-width="1.2" d="M12 42c-6-3-8 0-8 4 4 1 6 1 8-1M12 42c6-3 8 0 8 4-4 1-6 1-8-1"/>
+          <path stroke-width="1.3" d="M12 10c-3-6 3-8 0-8"/>
+        </g>
+      </svg>
     </div>
     <p id="hennaWhen"></p>
     <p id="hennaWhere"></p>
