@@ -225,16 +225,15 @@ textarea.field{resize:vertical;min-height:84px}
 .scroll-cue{
   position:fixed;z-index:35;left:50%;transform:translateX(-50%);
   bottom:calc(72px + env(safe-area-inset-bottom,0px));
-  display:inline-flex;align-items:center;gap:8px;
+  display:inline-flex;align-items:center;gap:6px;
   max-width:calc(100vw - 128px);
-  padding:10px 16px;border-radius:999px;pointer-events:none;
-  font-family:var(--f-ui);font-weight:600;font-size:13px;color:var(--ink);line-height:1.4;
-  background:linear-gradient(180deg,#FBF6EC,#F0E2C8);
-  box-shadow:0 10px 24px -8px rgba(22,14,18,.55),inset 0 0 0 1.5px var(--gold);
-  opacity:0;transition:opacity .45s ease;
+  padding:0;pointer-events:none;
+  font-family:var(--f-ui);font-weight:500;font-size:12px;color:var(--ink);line-height:1.4;
+  text-shadow:0 0 8px var(--paper),0 0 14px var(--paper);
+  opacity:0;transition:opacity .8s ease;
 }
 .scroll-cue[hidden]{display:none!important}
-.scroll-cue.show{opacity:1}
+.scroll-cue.show{opacity:.55}
 .scroll-cue svg{width:16px;height:16px;flex:0 0 auto;color:var(--gold-deep);animation:cuebounce 1.35s ease-in-out infinite}
 @keyframes cuebounce{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
 @media (prefers-reduced-motion:reduce){
@@ -726,6 +725,7 @@ var W = {
       cue.hidden = false;
       void cue.offsetWidth;
       cue.classList.add('show');
+      setTimeout(dismiss, 4000);
     }, 1500);
   }
 
