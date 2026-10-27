@@ -175,6 +175,13 @@ class Handler(SimpleHTTPRequestHandler):
     def log_message(self, format, *args):
         print("[%s] %s" % (self.log_date_time_string(), format % args))
 
+    def guess_type(self, path):
+        """Always include charset=utf-8 for HTML responses so Arabic OG tags are decoded correctly."""
+        ctype = super().guess_type(path)
+        if ctype and ctype.startswith("text/html") and "charset" not in ctype:
+            return "text/html; charset=utf-8"
+        return ctype
+
     def end_headers(self):
         path = urlparse(self.path).path
         if path.startswith("/api/") or path in ("/", "/index.html", "/admin", "/admin/", "/admin.html"):
@@ -214,6 +221,22 @@ class Handler(SimpleHTTPRequestHandler):
         if parsed.path in ("/admin", "/admin/"):
             self.path = "/admin.html"
             return super().do_GET()
+        if parsed.path == "/robots.txt":
+            body = (
+                "User-agent: *\n"
+                "Allow: /\n\n"
+                "# Allow Meta link-preview crawlers explicitly\n"
+                "User-agent: facebookexternalhit\n"
+                "Allow: /\n\n"
+                "User-agent: Facebot\n"
+                "Allow: /\n"
+            ).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "text/plain; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
         if parsed.path == "/api/wishes":
             rows = [
                 {"id": row["id"], "name": row["name"], "message": row["message"]}
